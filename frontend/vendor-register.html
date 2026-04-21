@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vendor Registration</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-body">
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="logo">🌿 Thulir Organics</div>
+    <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="shop.html">Shop</a></li>
+        <li><a href="vendor.html">Vendors</a></li>
+
+    </ul>
+</nav>
+
+<!-- REGISTER BOX -->
+<div class="auth-container large-form">
+    <h2>🌿 Farmer Vendor Registration</h2>
+
+<form id="vendorForm" enctype="multipart/form-data">
+
+    <input type="text" name="name" placeholder="Full Name" required>
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <input type="text" name="state" placeholder="State" required>
+    <textarea name="address" placeholder="Address" required></textarea>
+    <input type="tel" name="mobile" placeholder="Mobile" required>
+
+    <label>Certificate</label>
+    <input type="file" name="certificate" required>
+
+    <label>Photo</label>
+    <input type="file" name="photo" required>
+
+    <button type="submit">Register</button>
+
+</form>
+
+    <p>Already registered? <a href="vendor-login.html">Login</a></p>
+</div>
+
+<script src="vendor.js"></script>
+
+</body>
+</html>

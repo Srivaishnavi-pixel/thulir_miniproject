@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Sell Offline</title>
+<link rel="stylesheet" href="style.css">
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #f5f7fa;
+}
+
+/* NAVBAR */
+.navbar {
+    background: #2e7d32;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.middle h1
+{
+    display: flex;
+    text-align: center;
+    justify-content: center;
+}
+
+/* FORM CONTAINER */
+.form-container {
+    width: 450px;
+    margin: 40px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    height: 460px;
+    position: relative;
+    top: 10px;
+}
+
+.form-container h2 {
+    /* text-align: center; */
+    /* margin-bottom: 20px; */
+    position: relative;
+    bottom: 220px;
+    /* padding:left; */
+    color: white;
+
+}
+
+/* INPUTS */
+.form-container input,
+.form-container select {
+    width: 90%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    position: relative;
+    /* top: 20px; */
+    right: 40px;
+    bottom: 20px;
+}
+
+/* BUTTON */
+.sell-btn {
+    width: 85%;
+    padding: 14px;
+    background: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    position: relative;
+    top: 20px;
+    right: 40px;
+}
+
+.sell-btn:hover {
+    background: #0d47a1;
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="logo">🌿 Thulir Organics</div>
+    <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="vendor.html">Profile</a></li>
+        <li><a href="shop.html">Shop</a></li>
+    </ul>
+</nav>
+
+
+<div class="middle">
+    <h1>Sell Offline Form</h1>
+</div>
+
+
+
+<!-- FORM -->
+<div class="form-container">
+
+    <h2> Sell Offline Form</h2>
+
+    <form id="offlineForm">
+
+        <input type="text" id="farmerName" placeholder="Farmer Name" required>
+
+        <input type="date" id="date" required>
+
+        <select id="time">
+            <option value="">Select Time</option>
+            <option>Morning (AM)</option>
+            <option>Evening (PM)</option>
+        </select>
+
+        <!-- VEGETABLE LIST -->
+        <select id="vegetable">
+            <option value="">Select Vegetable</option>
+            <option>Tomato</option>
+            <option>Potato</option>
+            <option>Onion</option>
+            <option>Carrot</option>
+            <option>Brinjal</option>
+            <option>Cabbage</option>
+            <option>Cauliflower</option>
+            <option>Spinach</option>
+            <option>Beans</option>
+            <option>Capsicum</option>
+        </select>
+
+        <input type="text" id="source" placeholder="Source (Village / Area)" required>
+
+        <input type="text" id="destination" placeholder="Destination (City / Market)" required>
+
+        <button class="sell-btn">Sell Offline</button>
+
+    </form>
+
+</div>
+
+<script>
+document.getElementById("offlineForm").addEventListener("submit", function(e){
+
+    e.preventDefault();
+
+    const vendorId = localStorage.getItem("vendorId");
+
+    const orderId = "ORD" + Date.now(); // ✅ unique ID
+
+const data = {
+    orderId: orderId,   // ✅ ADD THIS
+
+    farmerName: document.getElementById("farmerName").value,
+    date: document.getElementById("date").value,
+    time: document.getElementById("time").value,
+    vegetable: document.getElementById("vegetable").value,
+    source: document.getElementById("source").value,
+    destination: document.getElementById("destination").value,
+    vendorId: localStorage.getItem("vendorId")
+};
+
+    // ✅ SAVE in localStorage (simple database)
+    let orders = JSON.parse(localStorage.getItem("offlineOrders")) || [];
+    orders.push(data);
+    localStorage.setItem("offlineOrders", JSON.stringify(orders));
+
+    alert("Offline sale added!");
+
+    window.location.href = "track.html";
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,28 @@
+<script>
+
+const orderId = prompt("Enter Order ID to track"); // or get from your system
+
+if (!orderId) {
+    alert("Order ID required");
+}
+
+if (navigator.geolocation) {
+
+    navigator.geolocation.watchPosition(async (pos) => {
+
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+
+        await fetch("http://localhost:5000/api/location/update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderId, lat, lng })
+        });
+
+        console.log("Sent:", orderId, lat, lng);
+
+    });
+
+}
+
+</script>

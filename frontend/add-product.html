@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Add Product</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="form-body">
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="logo">🌿 Thulir Organics</div>
+    <ul>
+        <li><a href="vendor.html">Profile</a></li>
+        <li><a href="shop.html">Shop</a></li>
+    </ul>
+</nav>
+
+<!-- FORM CARD -->
+<div class="form-container">
+
+    <form id="productForm" class="product-form">
+
+        <h2>Add New Product</h2>
+
+        <div class="input-group">
+            <label>Product Name</label>
+            <input type="text" name="name" placeholder="Enter product name" required>
+        </div>
+
+        <div class="input-group">
+            <label>Category</label>
+            <select name="category">
+                <option>Vegetables</option>
+                <option>Fruits</option>
+                <option>Dairy</option>
+                <option>Eggs</option>
+            </select>
+        </div>
+
+        <div class="input-row">
+            <div class="input-group">
+                <label>Quantity (kg)</label>
+                <input type="number" name="quantity" required>
+            </div>
+
+            <div class="input-group">
+                <label>Price (₹)</label>
+                <input type="number" name="price" required>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>Upload Image</label>
+            <input type="file" name="image" required>
+        </div>
+
+        <button type="submit" class="submit-btn">➕ Add Product</button>
+
+    </form>
+
+</div>
+
+<script src="product.js"></script>
+
+</body>
+</html>

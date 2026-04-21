@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Track Orders</title>
+<style>
+
+body {
+    font-family: Arial;
+    background: #f5f7fa;
+    margin: 0;
+}
+
+/* NAVBAR */
+.navbar {
+    background: #2e7d32;
+    padding: 15px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* GRID */
+.container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 30px;
+}
+
+/* CARD */
+.card {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.card img {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* BUTTON */
+.track-btn {
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px;
+    background: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+    <div>📡 Track Orders</div>
+    <div><a href="index.html" style="color:white;">Home</a></div>
+</div>
+
+<div class="container" id="cards"></div>
+
+<script>
+
+const orders = JSON.parse(localStorage.getItem("offlineOrders")) || [];
+
+const container = document.getElementById("cards");
+
+orders.forEach((o, index) => {
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+        <img src="http://localhost:5000/uploads/${o.vendorId}/photo.jpg"
+             onerror="this.src='fallback.jpg'">
+
+        <h3>${o.farmerName}</h3>
+        <p>${o.date} - ${o.time}</p>
+        <p>${o.vegetable}</p>
+        <p>${o.destination}</p>
+
+        <button class="track-btn" onclick="track(${index})">Track</button>
+    `;
+
+    container.appendChild(card);
+});
+
+function track(index){
+
+    const order = orders[index];
+
+    const query = `gps.html?orderId=${order.orderId}&source=${encodeURIComponent(order.source)}&dest=${encodeURIComponent(order.destination)}`;
+
+    window.location.href = query;
+}
+</script>
+
+</body>
+</html>

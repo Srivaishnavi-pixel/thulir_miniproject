@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Checkout</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="checkout-body">
+
+<nav class="navbar">
+    <div class="logo">🌿 Thulir Organics</div>
+</nav>
+
+<h1 class="checkout-title">Checkout</h1>
+
+<div class="checkout-container">
+
+    <!-- LEFT SIDE FORM -->
+    <div class="checkout-form">
+
+        <h2>Delivery Details</h2>
+
+        <input type="text" id="name" placeholder="Full Name">
+        <input type="email" id="email" placeholder="Email">
+        <input type="text" id="phone" placeholder="Phone Number">
+
+        <select id="state">
+            <option>Select State</option>
+            <option>Maharashtra</option>
+            <option>Gujarat</option>
+            <option>Karnataka</option>
+            <option>Tamil Nadu</option>
+        </select>
+
+        <input type="text" id="city" placeholder="City">
+        <textarea id="address" placeholder="Full Address"></textarea>
+        <input type="text" id="pincode" placeholder="Pin Code">
+
+        <!-- PAYMENT -->
+        <h3>Payment Method</h3>
+
+<div class="payment-options">
+
+<label>
+<input type="radio" name="payment" value="COD" onclick="showPayment('cod')">
+Cash on Delivery
+</label>
+
+<label>
+<input type="radio" name="payment" value="UPI" onclick="showPayment('upi')">
+UPI / QR Code
+</label>
+
+<label>
+<input type="radio" name="payment" value="CARD" onclick="showPayment('card')">
+Credit / Debit Card
+</label>
+
+</div>
+
+        <!-- DYNAMIC AREA -->
+        <div id="paymentDetails" style="margin-bottom: 20px;"></div>
+
+        <div style="font-size: 22px; font-weight: bold; margin-bottom: 20px; color: #d32f2f;">Total to Pay: ₹<span id="finalTotal">0</span></div>
+
+        <button class="place-order-btn" id="orderBtn" onclick="placeOrder()" style="width: 100%; left: 0; font-size: 18px; font-weight: bold;">Place Order</button>
+
+    </div>
+
+    <!-- RIGHT SIDE PRODUCT -->
+    <div class="checkout-product" id="productBox" style="width: 320px; max-height: 80vh; overflow-y: auto;"></div>
+
+</div>
+
+<!-- SUCCESS MODAL (Hidden by default) -->
+<div id="successModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: white; padding: 40px; border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 350px;">
+        <div style="font-size: 50px; color: #28a745; margin-bottom: 10px;">✅</div>
+        <h2 style="margin: 0 0 10px; color: #333;">Order Placed Successfully!</h2>
+        <p style="color: #666; margin-bottom: 20px;">A confirmation email has been sent to your registered Gmail address.</p>
+        <button onclick="window.location.href='shop.html'" style="background: #28a745; color: white; padding: 10px 25px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Continue Shopping</button>
+    </div>
+</div>
+
+<script>
+
+const items = JSON.parse(localStorage.getItem("checkoutItems")) || [];
+const box = document.getElementById("productBox");
+let subtotal = 0;
+let isCod = false;
+
+if (items.length > 0) {
+    let html = "<h2>Order Summary</h2>";
+    
+    items.forEach(product => {
+        const qty = product.qty || 1;
+        const totalItemPrice = product.price * qty;
+        subtotal += totalItemPrice;
+        
+        html += `
+            <div class="product-card" style="width: 100%; height: auto; padding-bottom: 15px; margin-bottom: 20px;">
+                <img src="http://localhost:5000/uploads/${product.vendorId}/${product.image}" class="product-img" onerror="this.src='fallback.jpg'" style="border-radius: 15px 15px 0 0;">
+                <div class="card-body">
+                    <h3 style="margin-bottom: 10px;">${product.name}</h3>
+                    <p style="font-weight: bold; color: #2e7d32; font-size: 18px;">Price: ₹${totalItemPrice}</p>
+                    <p style="color: #666;">Qty: ${qty}</p>
+                </div>
+            </div>
+        `;
+    });
+    
+    box.innerHTML = html;
+    updateTotal();
+} else {
+    box.innerHTML = "<p>No items to checkout.</p>";
+}
+
+function updateTotal() {
+    let finalAmount = subtotal;
+    if (isCod) finalAmount += 20;
+    document.getElementById("finalTotal").innerText = finalAmount;
+}
+
+async function placeOrder() {
+    const payment = document.querySelector('input[name="payment"]:checked');
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+
+    if (!payment) {
+        alert("Please select a payment method.");
+        return;
+    }
+
+    if (!name || !email) {
+        alert("Please fill in your Delivery Details (Name and Email are required).");
+        return;
+    }
+
+    // Change button text to show loading
+    const orderBtn = document.getElementById("orderBtn");
+    const originalText = orderBtn.innerText;
+    orderBtn.innerText = "Processing...";
+    orderBtn.disabled = true;
+
+    try {
+        let detailsString = items.map(p => `- ${p.name} (Qty: ${p.qty || 1}) : ₹${p.price * (p.qty || 1)}`).join('\n');
+        let totalAmt = subtotal;
+        if (payment.value === "COD") {
+            detailsString += `\n- COD Charge : ₹20`;
+            totalAmt += 20;
+        }
+        detailsString += `\n\nGRAND TOTAL : ₹${totalAmt}`;
+        
+        // 1. Send request to backend to place order & send email
+        const response = await fetch("http://localhost:5000/api/orders/place", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                name: name,
+                email: email,
+                productDetails: detailsString
+            })
+        });
+
+        const data = await response.json();
+
+        // 2. Show the beautiful success modal instead of alert
+        document.getElementById("successModal").style.display = "flex";
+        
+        // Clear cart if we just checked out the cart
+        if (localStorage.getItem("checkoutItems") === localStorage.getItem("cart")) {
+            localStorage.removeItem("cart");
+        }
+        localStorage.removeItem("checkoutItems");
+
+    } catch (err) {
+        console.error("Order Error:", err);
+        alert("There was an error placing your order. Please try again.");
+        orderBtn.innerText = originalText;
+        orderBtn.disabled = false;
+    }
+}
+
+
+function showPayment(type) {
+
+    const paymentBox = document.getElementById("paymentDetails");
+    const btn = document.getElementById("orderBtn");
+
+    isCod = (type === "cod");
+    updateTotal();
+
+    if (type === "card") {
+
+        paymentBox.innerHTML = `
+            <div class="card-box">
+                <input type="text" placeholder="Card Number">
+                <input type="text" placeholder="MM/YY">
+                <input type="password" placeholder="CVV">
+            </div>
+        `;
+
+        btn.innerText = "Pay Now";
+
+    }
+
+    else if (type === "cod") {
+
+        paymentBox.innerHTML = `
+            <div class="cod-box">
+                <p>💰 Pay at delivery.</p>
+                <p>₹20 extra COD charge applied.</p>
+                <button onclick="verifyUser()">Verify (Captcha)</button>
+            </div>
+        `;
+
+        btn.innerText = "Confirm Order";
+    }
+
+    else if (type === "upi") {
+
+        paymentBox.innerHTML = `
+            <div class="upi-box">
+                <p>Scan QR to pay</p>
+                <img src="qr.png" class="qr-img">
+                <p>Or pay using UPI ID: <b>thulir@upi</b></p>
+            </div>
+        `;
+
+        btn.innerText = "I have Paid";
+    }
+}
+
+function verifyUser() {
+    alert("User verified ✅");
+}
+
+
+</script>
+
+</body>
+</html>

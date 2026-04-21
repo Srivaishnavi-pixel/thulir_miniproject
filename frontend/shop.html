@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Shop</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="shop-body">
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="logo">🌿 Thulir Organics</div>
+
+    <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="cart.html">Cart 🛒</a></li>
+    </ul>
+</nav>
+
+<h1 class="shop-title">Shop Products</h1>
+
+<div id="products" class="product-grid"></div>
+
+<script>
+async function loadProducts() {
+
+    try {
+        const res = await fetch("http://localhost:5000/api/products");
+        const data = await res.json();
+
+        const container = document.getElementById("products");
+        container.innerHTML = "";
+
+        data.forEach(p => {
+
+            const card = document.createElement("div");
+            card.className = "product-card";
+
+            card.innerHTML = `
+    <img src="http://localhost:5000/uploads/${p.vendorId}/${p.image}" 
+     class="product-img"
+     onerror="this.src='fallback.jpg'">
+
+    <div class="card-body">
+        <h3 class="product-name">${p.name}</h3>
+        <p class="price">₹${p.price}</p>
+        <p class="qty">${p.quantity} kg</p>
+        <p class="category">${p.category}</p>
+
+        <div class="btn-group">
+            <button class="cart-btn" onclick="addToCart('${p._id}', '${p.name.replace(/'/g, "\\'")}', '${p.price}', '${p.image}', '${p.vendorId}')">Add to Cart</button>
+            <button class="buy-btn" onclick="buyNow('${p._id}')">Buy Now</button>
+            </div>
+    </div>
+`;
+
+            container.appendChild(card);
+        });
+
+    } catch (err) {
+        console.error(err);
+        alert("Error loading products");
+    }
+}
+
+loadProducts();
+
+function addToCart(id, name, price, image, vendorId) {
+    // 1. Get current cart from localStorage or create an empty array
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+    // 2. Check if the product is already in the cart
+    const exists = cart.find(item => item.id === id);
+
+    if (exists) {
+        alert("This product is already in your cart!");
+        return;
+    }
+
+    // 3. Add to cart array with initial quantity of 1
+    cart.push({ id, name, price, image, vendorId, qty: 1 });
+
+    // 4. Save back to localStorage
+    localStorage.setItem("cart", JSON.stringify(cart));
+    
+    alert(name + " added to cart successfully!");
+}
+
+
+function buyNow(productId) {
+
+    console.log("Clicked Product ID:", productId); // 🔍 DEBUG
+
+    const user = localStorage.getItem("userId");
+
+    if (!user) {
+        alert("Please login first");
+        window.location.href = "login.html";
+        return;
+    }
+
+    fetch("http://localhost:5000/api/products/" + productId)
+        .then(res => {
+            if (!res.ok) {
+                throw new Error("Product not found");
+            }
+            return res.json();
+        })
+        .then(product => {
+
+            console.log("Fetched Product:", product); // 🔍 DEBUG
+
+            // Save as an array so checkout.html can handle it uniformly with the cart
+            product.qty = 1;
+            localStorage.setItem("checkoutItems", JSON.stringify([product]));
+
+            window.location.href = "checkout.html";
+        })
+        .catch(err => {
+            console.error("FETCH ERROR:", err);
+            alert("Error loading product");
+        });
+}
+
+</script>
+
+</body>
+</html>

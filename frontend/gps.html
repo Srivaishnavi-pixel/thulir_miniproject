@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Live Tracking</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+}
+
+#map {
+    height: 100vh;
+}
+
+.title {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: bold;
+    z-index: 1000;
+}
+</style>
+</head>
+
+<body>
+
+<div class="title">📍 Live Truck Tracking</div>
+
+<div style="
+position:absolute;
+top:60px;
+left:50%;
+transform:translateX(-50%);
+background:white;
+padding:10px 20px;
+border-radius:10px;
+z-index:1000;
+font-weight:bold;">
+🚚 Truck is moving...
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+
+// 🔥 GET DATA FROM URL
+const params = new URLSearchParams(window.location.search);
+
+const source = params.get("source");
+const destination = params.get("dest");
+const orderId = params.get("orderId") || "Unknown";   // ✅ VERY IMPORTANT
+
+
+// 🗺️ MAP INIT
+let map = L.map('map').setView([20.5937, 78.9629], 5);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+}).addTo(map);
+
+// 🚚 Truck Icon
+const truckIcon = L.icon({
+    iconUrl: "https://cdn-icons-png.flaticon.com/512/1995/1995470.png",
+    iconSize: [40, 40]
+});
+
+// 📍 Convert place → coordinates
+async function getCoordinates(place) {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${place}`);
+    const data = await res.json();
+
+    if (!data.length) {
+        alert("Location not found: " + place);
+        return null;
+    }
+
+    return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+}
+
+let truckMarker = null;
+
+// 🚀 INIT ROUTE
+async function init() {
+
+    const src = await getCoordinates(source);
+    const dest = await getCoordinates(destination);
+
+    if (!src || !dest) return;
+
+    // markers
+    L.marker(src).addTo(map).bindPopup("Source");
+    L.marker(dest).addTo(map).bindPopup("Destination");
+
+    // route
+    const routeRes = await fetch(
+        `https://router.project-osrm.org/route/v1/driving/${src[1]},${src[0]};${dest[1]},${dest[0]}?overview=full&geometries=geojson`
+    );
+
+    const routeData = await routeRes.json();
+    const routeCoords = routeData.routes[0].geometry.coordinates;
+
+    const path = routeCoords.map(c => [c[1], c[0]]);
+
+    const routeLine = L.polyline(path, { color: "blue" }).addTo(map);
+    map.fitBounds(routeLine.getBounds());
+
+}
+
+init();
+
+// 🚚 REAL-TIME LIVE TRACKING (Fetching from your backend)
+setInterval(async () => {
+
+    try {
+        // Ask the backend where the farmer is
+        const res = await fetch(`http://localhost:5000/api/location/${orderId}`);
+        const data = await res.json();
+
+        console.log("TRACK:", orderId, data);
+
+        // If no location data yet, don't show the truck
+        if (!data.lat || !data.lng) return;
+
+        // Create marker first time
+        if (!truckMarker) {
+            truckMarker = L.marker([data.lat, data.lng], { icon: truckIcon })
+                .addTo(map)
+                .bindPopup("🚚 Farmer is here! (Order: " + orderId + ")")
+                .openPopup();
+        } 
+        // Update position
+        else {
+            truckMarker.setLatLng([data.lat, data.lng]);
+        }
+
+        // Follow the truck on the map smoothly
+        map.setView([data.lat, data.lng], 15, { animate: true });
+
+    } catch (err) {
+        console.error("Tracking error:", err);
+    }
+
+}, 3000); // Checks every 3 seconds
+
+</script>
+
+</body>
+</html>

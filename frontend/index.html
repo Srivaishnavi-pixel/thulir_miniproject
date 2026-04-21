@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Thulir Organics</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="logo">🌿 ThulirOrganics</div>
+    <ul>
+        <li>Home</li>
+        <li><a href="shop.html">Shop</a></li>
+       <li><a href="vendor-login.html">Vendor</a></li>
+        <li>About</li>
+        <li><a href="login.html">Login</a></li>
+<a href="register.html"><button class="signup">Sign Up</button></a>
+
+<span id="userNameDisplay"></span>
+<button onclick="logout()" id="logoutBtn" style="display:none;">Logout</button>
+
+<span id="userNameDisplay"></span>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <h1>Fresh & Organic Food Delivered to You</h1>
+    <p>Shop the best organic fruits and vegetables</p>
+    <button class="shop-btn">Shop Now</button>
+</section>
+
+<!-- INFO BAR -->
+<div class="info-bar">
+    Fresh Vegetables Are Coming To Your Area
+</div>
+
+<!-- ANIMATION SECTION -->
+<section class="animation" id="sky">
+
+    <!-- SUN -->
+    <div class="sun"></div>
+
+    <!-- MOON -->
+    <div class="moon"></div>
+
+    <!-- MOVING CLOUDS -->
+    <div class="cloud cloud1"></div>
+    <div class="cloud cloud2"></div>
+
+    <!-- RED SIGNAL -->
+    <div class="signal" onclick="goToTrack()"></div>
+
+    <!-- TRUCK -->
+    <div class="truck">🚚</div>
+
+    <!-- ROAD -->
+    <div class="road">
+        <div class="lines"></div>
+    </div>
+
+</section>
+
+<script src="script.js"></script>
+<script>
+    const name = localStorage.getItem("userName");
+
+    if (name) {
+        document.getElementById("userNameDisplay").innerText = "Welcome, " + name;
+        document.getElementById("logoutBtn").style.display = "inline-block";
+    }
+    
+
+    function logout() {
+        localStorage.removeItem("userName");
+        window.location.href = "login.html";
+    }
+</script>
+</body>
+</html>

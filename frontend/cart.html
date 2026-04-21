@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Shopping Cart</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="shop-body">
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="logo">🌿 Thulir Organics</div>
+
+    <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="shop.html">Shop</a></li>
+    </ul>
+</nav>
+
+<h1 class="shop-title">Your Cart</h1>
+
+<div id="cart-products" class="product-grid">
+    <!-- Cart items will appear here -->
+</div>
+
+<div id="cart-total-container" style="text-align: center; margin-top: 30px; margin-bottom: 50px; font-size: 24px; font-weight: bold; display: none; color: #2e7d32;">
+    <div style="margin-bottom: 15px;">Grand Total: ₹<span id="grand-total">0</span></div>
+    <button onclick="checkoutCart()" style="background: #ff5722; color: white; padding: 12px 30px; font-size: 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">Buy Now</button>
+</div>
+
+<script>
+function loadCart() {
+    // 1. Read the cart array from localStorage
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const container = document.getElementById("cart-products");
+
+    container.innerHTML = ""; // clear container
+
+    // 2. If cart is empty, show a message
+    if (cart.length === 0) {
+        container.innerHTML = "<h3 style='grid-column: 1 / -1; text-align: center; margin-top: 50px;'>Your cart is empty 🛒</h3>";
+        return;
+    }
+
+    let grandTotal = 0;
+
+    // 3. Render each cart item
+    cart.forEach(p => {
+        // Fallback to 1 if qty is undefined from older cart additions
+        const qty = p.qty || 1;
+        const itemTotal = p.price * qty;
+        grandTotal += itemTotal;
+
+        const card = document.createElement("div");
+        card.className = "product-card";
+        // Override the fixed height from style.css so the extra buttons fit
+        card.style.height = "auto";
+        card.style.minHeight = "420px";
+        card.style.paddingBottom = "15px";
+
+        // Build the HTML for the card
+        card.innerHTML = `
+            <img src="http://localhost:5000/uploads/${p.vendorId}/${p.image}" 
+                 class="product-img"
+                 onerror="this.src='fallback.jpg'">
+
+            <div class="card-body">
+                <h3 class="product-name">${p.name}</h3>
+                <p class="price">Price: ₹${p.price} / kg</p>
+                
+                <!-- Quantity Controls -->
+                <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin: 10px 0;">
+                    <button onclick="decreaseQty('${p.id}')" style="padding: 5px 12px; font-size: 18px; border: 1px solid #ccc; background: #fff; cursor: pointer; border-radius: 4px;">-</button>
+                    <span style="font-size: 18px; font-weight: bold;">${qty}</span>
+                    <button onclick="increaseQty('${p.id}')" style="padding: 5px 12px; font-size: 18px; border: 1px solid #ccc; background: #fff; cursor: pointer; border-radius: 4px;">+</button>
+                </div>
+                
+                <p style="font-size: 18px; font-weight: bold; color: #2e7d32;">Total: ₹${itemTotal}</p>
+
+                <div class="btn-group">
+                    <button class="cart-btn" style="background-color: #d32f2f;" onclick="removeFromCart('${p.id}')">Remove</button>
+                </div>
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
+
+    // 4. Update the Grand Total display
+    const totalContainer = document.getElementById("cart-total-container");
+    if (cart.length > 0) {
+        document.getElementById("grand-total").innerText = grandTotal;
+        totalContainer.style.display = "block";
+    } else {
+        totalContainer.style.display = "none";
+    }
+}
+
+function increaseQty(productId) {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    let item = cart.find(p => p.id === productId);
+    if (item) {
+        item.qty = (item.qty || 1) + 1;
+        localStorage.setItem("cart", JSON.stringify(cart));
+        loadCart();
+    }
+}
+
+function decreaseQty(productId) {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    let item = cart.find(p => p.id === productId);
+    if (item) {
+        if ((item.qty || 1) > 1) {
+            item.qty -= 1;
+            localStorage.setItem("cart", JSON.stringify(cart));
+            loadCart();
+        }
+    }
+}
+
+function removeFromCart(productId) {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    
+    // Filter out the product to be removed
+    cart = cart.filter(item => item.id !== productId);
+    
+    // Save the new array back to localStorage
+    localStorage.setItem("cart", JSON.stringify(cart));
+    
+    // Reload the cart UI
+    loadCart();
+}
+
+function checkoutCart() {
+    const user = localStorage.getItem("userId");
+    if (!user) {
+        alert("Please login first");
+        window.location.href = "login.html";
+        return;
+    }
+
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    if (cart.length === 0) {
+        alert("Your cart is empty!");
+        return;
+    }
+
+    // Save the whole cart for the checkout page to use
+    localStorage.setItem("checkoutItems", JSON.stringify(cart));
+    window.location.href = "checkout.html";
+}
+
+// Load cart immediately when page opens
+loadCart();
+</script>
+
+</body>
+</html>

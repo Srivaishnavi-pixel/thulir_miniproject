@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Vendor Page</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="hamburger" onclick="openMenu()">☰</div>
+    <div class="logo">🌿 Thulir Organics</div>
+
+    <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="shop.html">Shop</a></li>
+    </ul>
+    <button onclick="logoutVendor()" class="logout-btn">Logout</button>
+
+    <!-- PROFILE IMAGE -->
+    <img id="profilePic" class="profile-pic" src="">
+</nav>
+
+<!-- SIDEBAR -->
+<div id="sidebar" class="sidebar">
+    <a href="#" class="closebtn" onclick="closeMenu()">×</a>
+    <a href="vendor-login.html">Vendor Login</a>
+    <a href="vendor-register.html">Vendor Registration</a>
+    <a href="index.html">Go Back</a>
+</div>
+
+<!-- OVERLAY -->
+<div id="overlay" onclick="closeMenu()"></div>
+
+<!-- DASHBOARD -->
+<div class="dashboard">
+
+    <!-- LEFT SIDE -->
+    <div class="profile-box">
+
+    <h2 id="vendorName"></h2>
+    <p id="vendorState"></p>
+    <p id="vendorAddress"></p>
+    <p id="vendorMobile"></p>
+
+    <h4>Certificate</h4>
+
+    <!-- 🔥 ADD THIS (certificate image) -->
+    <img id="certificate" class="cert-img" src="" alt="Certificate">
+
+</div>
+
+    <!-- CENTER -->
+    <div class="actions">
+        <button class="action-btn" onclick="goAddProduct()">➕ Add Product</button>
+        <button class="action-btn" onclick="goSellOffline()">🛒 Sell Offline</button>
+    </div>
+
+</div>
+
+<script src="vendor.js"></script>
+<script>
+async function loadVendor() {
+
+    const vendorId = localStorage.getItem("vendorId");
+
+if (!vendorId) {
+    window.location.href = "vendor-login.html";
+    return;
+}
+
+    try {
+        const res = await fetch("http://localhost:5000/api/vendors/" + vendorId);
+        const data = await res.json();
+
+        console.log("DATA:", data);
+
+        // TEXT DATA
+        document.getElementById("vendorName").innerText = data.name;
+        document.getElementById("vendorState").innerText = "State: " + data.state;
+        document.getElementById("vendorAddress").innerText = "Address: " + data.address;
+        document.getElementById("vendorMobile").innerText = "Mobile: " + data.mobile;
+
+        // 🔥 FINAL IMAGE PATH
+        const base = `http://localhost:5000/uploads/${data.registrationId}`;
+
+        const profileImg = document.getElementById("profilePic");
+        const certImg = document.getElementById("certificate");
+
+        profileImg.src = base + "/photo.jpg";
+        certImg.src = base + "/certificate.jpg";
+
+        console.log("PROFILE:", profileImg.src);
+        console.log("CERT:", certImg.src);
+
+    } catch (err) {
+        console.error("ERROR:", err);
+        alert("Error loading profile");
+    }
+}
+loadVendor();
+
+function logoutVendor() {
+    localStorage.removeItem("vendorId");
+    localStorage.removeItem("vendorName");
+
+    alert("Logged out successfully");
+
+    window.location.href = "vendor-login.html";
+}
+
+
+
+function goSellOffline(){
+    window.location.href = "sell-offline.html";
+}
+
+</script>
+</body>
+</html>
